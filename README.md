@@ -1,0 +1,2 @@
+# EasyLib
+my wonderful lib

@@ -1,0 +1,10 @@
+debug:
+  enabled: false
+  log-level: "INFO"
+  steps:
+    gui_open: true
+    gui_build: true
+    gui_setup: true
+    icon_mapping: true
+    default_icon: true
+
