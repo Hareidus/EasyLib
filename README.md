@@ -261,6 +261,4 @@ MIT License © 2025 EasyLib Contributors
 > 💡 **提示**：使用 `EasyLib` 可显著提升你的 Minecraft 插件开发效率！  
 > 📬 有任何问题？欢迎在 GitHub 提交 Issue！
 
----
 
-如需生成 `docs/` 目录或发布到 GitHub Pages，我也可以帮你生成文档结构。是否需要我导出为 `.md` 文件或提供图标资源建议？
