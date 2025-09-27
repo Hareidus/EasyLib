@@ -169,11 +169,3 @@ EasyLib/
 ├── function/          # 动作和匹配器系统
 └── EasyLib.kt         # 主插件文件
 ```
-
-
-## 注意事项
-
-1. 确保依赖插件已正确安装
-2. 配置文件格式需符合规范
-3. 建议启用调试模式进行开发测试
-4. 包命名需要统一规范（目前存在 `Matching.function.actions` 和 `EasyLib.function` 混用情况）
