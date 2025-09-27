@@ -1,7 +1,8 @@
-package EasyCrate.Factory.ItemGenerator
+package EasyLib.ItemGenerator
 
 
-import EasyCrate.Factory.ItemGenerator.Implement.any
+import EasyLib.ItemGenerator.Implement.any
+import EasyLib.ItemGenerator.ItemGenerator
 
 object ItemGeneratorFactory {
     fun getItemGenerator() : ItemGenerator {

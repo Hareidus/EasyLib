@@ -9,14 +9,19 @@ plugins {
 
 
 taboolib {
+    subproject = true
     env {
         // 安装模块
         install(Basic, Bukkit, BukkitHook, BukkitNMSUtil , BukkitUI,Kether,Metrics)
     }
     version {
-        taboolib = "6.2.3-e102d76"
+        taboolib = "6.2.3-1a8d7125"
         coroutines = "1.8.1"
+
+
+
     }
+
     relocate("top.maplex.arim","EasyLib.arim")
     dependencies {
         taboo("top.maplex.arim:Arim:1.2.14") // 替换为最新版本

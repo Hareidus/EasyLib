@@ -10,9 +10,11 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import taboolib.common.platform.function.submit
+import taboolib.expansion.submitChain
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.chat.colored
 import taboolib.module.ui.ClickEvent
+import taboolib.module.ui.openMenu
 import taboolib.module.ui.type.Chest
 import taboolib.module.ui.type.impl.ChestImpl
 
@@ -22,51 +24,11 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
     val itemProvider: (ConfigurationSection, Char, Player) -> ItemStack? = { section, key, player ->
         getItemFromConfig(section, key, player)
     }
-
-        /**
-     * 跟踪GUI构建步骤的执行时间和结果
-     *
-     * @param stepName 步骤名称，用于标识当前执行的构建步骤
-     * @param step 要执行的构建步骤逻辑，这是一个无参数无返回值的lambda表达式
-     */
-    protected fun trackStep(stepName: String, step: () -> Unit) {
-        // 记录步骤开始执行的时间
-        val startTime = System.currentTimeMillis()
-        var success = true
-
-        try {
-            // 执行构建步骤
-            step()
-        } catch (e: Exception) {
-            // 如果步骤执行过程中发生异常，标记为失败并重新抛出异常
-            success = false
-            throw e
-        } finally {
-            // 计算步骤执行耗时并记录构建步骤信息
-            val duration = System.currentTimeMillis() - startTime
-            buildSteps.add(BuildStep(stepName, duration, success))
-            DebugLogger.debug("GUI构建步骤 '$stepName' 耗时: ${duration}ms, 结果: ${if (success) "成功" else "失败"}", "gui_build")
-        }
-    }
-
-
-    /**
-     * 打印构建性能报告
-     */
-    protected fun printBuildReport() {
-        if (!DebugConfig.enabled) return
-        val totalDuration = buildSteps.sumOf { it.duration }
-        DebugLogger.debug("=== GUI构建性能报告 ===", "gui_build")
-        buildSteps.forEach { step ->
-            val percentage = if (totalDuration > 0) (step.duration.toDouble() / totalDuration * 100).toInt() else 0
-            DebugLogger.debug("  ${step.name}: ${step.duration}ms (${percentage}%)", "gui_build")
-        }
-        DebugLogger.debug("总耗时: ${totalDuration}ms", "gui_build")
-    }
+    abstract val chestImpl : ChestImpl
 
     private val soundManager = DefaultSoundManager()
 
-    abstract fun build() : Inventory
+    abstract fun build(otherFunc : () -> Unit) : Inventory
     abstract fun open()
     abstract fun mapIconsToFunctions()
 
@@ -74,9 +36,9 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
     /**
      * 构建并打开GUI的便捷方法
      */
-    open fun buildAndOpen(): IBuilder {
+    open fun buildAndOpen(buildFunc : () ->  Unit): IBuilder {
         try {
-            build()
+            build(buildFunc)
             open()
         } catch (e: Exception) {
             DebugLogger.debug("Failed to build and open GUI: ${e.message}", "gui_build", "EasyLib")
@@ -88,22 +50,22 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
     /**
      * 异步构建GUI
      */
-    open fun buildAsync(callback: (Inventory) -> Unit) {
-        // 使用TabooLib的异步任务
-        submit(async = true) {
-            try {
-                val inventory = build()
-                submit {
-                    callback(inventory)
+    open fun buildAsyncAndOpen(buildOtherFunc : () ->  Unit) {
+            submitChain {
+                val inv = async {
+                    try {
+                        build(buildOtherFunc)
+                    } catch (e: Exception) {
+                        DebugLogger.debug("Failed to build GUI asynchronously: ${e.message}", "gui_build", "EasyLib")
+                        throw GuiBuildException("GUI构建失败", config.getAbsolutePath(), e)
+                    }
                 }
-            } catch (e: Exception) {
-                DebugLogger.debug("Failed to build GUI asynchronously: ${e.message}", "gui_build", "EasyLib")
+                sync {
+                    thisPlayer.openMenu(inv)
+                }
             }
-        }
+            //DebugLogger.debug("Failed to build GUI asynchronously: ${e.message}", "gui_build", "EasyLib")
     }
-
-
-
 
     /**
      * 将图标映射到功能函数
@@ -120,13 +82,15 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
         DebugLogger.debug("Mapping icons to functions ${config.getFile()?.absolutePath}", "icon_mapping")
 
         val errors = mutableListOf<Exception>()
-        for (key in config.getDeclareChar()) {
+        val declareChars = config.getDeclareChar() // 缓存结果，避免重复调用
+
+        // 使用 forEachIndexed 避免额外的索引计算
+        declareChars.forEach { key ->
             try {
                 val function = config.getIconFunction(key.toString())
                 DebugLogger.debug("Processing icon key: $key, function: $function", "icon_mapping")
                 func(key, function)
             } catch (e: Exception) {
-                //DebugLogger.error("Error processing icon key: $key", e)
                 DebugLogger.debug("Error processing icon key: $key", "mapIconsToFunction", "EasyLib")
                 errors.add(e)
             }
@@ -145,21 +109,11 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
             )
         }
     }
-    private fun setIconWithSound(key: Char, itemStack: ItemStack, chest : ChestImpl) {
-        chest.set(key, itemStack) {
-            isCancelled = true
-            try {
-                soundManager.playSound(thisPlayer, config.getSound(key.toString()))
-            } catch (e: Exception) {
-                DebugLogger.debug("Error processing icon key: $key", "mapIconsToFunction", "EasyLib")
-            }
-        }
-    }
-    open fun setupChest(impl: ChestImpl) {
+    open fun setupChest() {
         trackStep("setup_chest") {
             try {
                 DebugLogger.debug("Setting up chest GUI ${config.getFile()?.absolutePath}", "gui_setup")
-                impl.map(*config.getMap().toTypedArray())
+                chestImpl.map(*config.getMap().toTypedArray())
             } catch (e: Exception) {
                 DebugLogger.debug("Error setting up chest GUI", "gui_setup", "EasyLib")
                 throw GuiBuildException("Gui构建异常, 流程: 布局 , 请检查配置", config.getFile().absolutePath, e)
@@ -167,7 +121,7 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
         }
     }
 
-       /**
+    /**
      * 设置默认图标
      *
      * 该函数根据给定的键值从配置中获取相应的物品图标，并将其设置到指定的箱子界面中。
@@ -176,17 +130,17 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
      * @param key 图标在GUI中的位置键值
      * @param chest 目标箱子界面实例
      */
-    open fun setDefaultIcon(key : Char , chest : ChestImpl){
+    open fun setDefaultIcon(key : Char){
         try {
             DebugLogger.debug("Setting default icon for key: $key", "default_icon")
             config.getKeySection()?.let { section ->
                 itemProvider(section, key, thisPlayer)?.let { itemStack ->
-                    chest.set(key, itemStack) {
+                    chestImpl.set(key, itemStack) {
                         isCancelled = true
                         try {
                             soundManager.playSound(thisPlayer, config.getSound(key.toString()))
                         } catch (e: Exception) {
-                           // DebugLogger.error("Error playing sound for default icon key: $key", e)
+                            // DebugLogger.error("Error playing sound for default icon key: $key", e)
                             DebugLogger.debug("Error playing sound for default icon key: $key", "default_icon", "EasyLib")
                         }
                     }
@@ -198,14 +152,28 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
         }
     }
 
-    fun setIcon(key : Char , chest : ChestImpl , iconFuc : (key : Char,itemStack : ItemStack) -> Unit){
+    private fun setIconWithSound(key: Char, itemStack: ItemStack) {
+        chestImpl.set(key, itemStack) {
+            isCancelled = true
+            try {
+                soundManager.playSound(thisPlayer, config.getSound(key.toString()))
+            } catch (e: Exception) {
+                DebugLogger.debug("Error processing icon key: $key", "mapIconsToFunction", "EasyLib")
+            }
+        }
+    }
+
+
+    fun setIcon(key : Char, iconFuc : (key : Char,itemStack : ItemStack) -> Unit){
         try {
-            DebugLogger.debug("Setting default icon for key: $key", "default_icon")
+            DebugLogger.debug("Setting custom icon for key: $key", "default_icon")
             config.getKeySection()?.let { section ->
                 itemProvider(section, key, thisPlayer)?.let { itemStack ->
-                    //chest.set(key, itemStack) {
+//                    chestImpl.set(key, itemStack) {
+//
+//                    }
                     iconFuc(key,itemStack)
-                    setIconWithSound(key, itemStack, chest)
+                    setIconWithSound(key, itemStack)
                 }
             }
         } catch (e: Exception) {
@@ -213,13 +181,58 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
             DebugLogger.debug("Error setting default icon for key: $key", "default_icon", "EasyLib")
         }
     }
-        /**
-         * 重写GUI标题
-         *
-         * @param newTitle 新的标题字符串
-         * @param chest 需要更新标题的Chest对象
-         */
-        fun overrideTitle(newTitle : String,chest : Chest){
-            chest.updateTitle(newTitle.colored())
+    /**
+     * 重写GUI标题
+     *
+     * @param newTitle 新的标题字符串
+     * @param chest 需要更新标题的Chest对象
+     */
+    fun overrideTitle(newTitle : String,chest : Chest){
+        chest.updateTitle(newTitle.colored())
+    }
+
+    /**
+     * 跟踪GUI构建步骤的执行时间和结果
+     *
+     * @param stepName 步骤名称，用于标识当前执行的构建步骤
+     * @param step 要执行的构建步骤逻辑，这是一个无参数无返回值的lambda表达式
+     */
+    protected fun trackStep(stepName: String, step: () -> Unit) {
+        // 如果调试未启用，直接执行步骤而不进行跟踪
+        if (!DebugConfig.enabled) {
+            step()
+            return
         }
+
+        // 记录步骤开始执行的时间
+        val startTime = System.currentTimeMillis()
+        var success = true
+
+        try {
+            // 执行构建步骤
+            step()
+        } catch (e: Exception) {
+            // 如果步骤执行过程中发生异常，标记为失败并重新抛出异常
+            success = false
+            throw e
+        } finally {
+            // 计算步骤执行耗时并记录构建步骤信息
+            val duration = System.currentTimeMillis() - startTime
+            buildSteps.add(BuildStep(stepName, duration, success))
+            DebugLogger.debug("GUI构建步骤 '$stepName' 耗时: ${duration}ms, 结果: ${if (success) "成功" else "失败"}", "gui_build")
+        }
+    }
+    /**
+     * 打印构建性能报告
+     */
+    protected fun printBuildReport() {
+        if (!DebugConfig.enabled) return
+        val totalDuration = buildSteps.sumOf { it.duration }
+        DebugLogger.debug("=== GUI构建性能报告 ===", "gui_build")
+        buildSteps.forEach { step ->
+            val percentage = if (totalDuration > 0) (step.duration.toDouble() / totalDuration * 100).toInt() else 0
+            DebugLogger.debug("  ${step.name}: ${step.duration}ms (${percentage}%)", "gui_build")
+        }
+        DebugLogger.debug("总耗时: ${totalDuration}ms", "gui_build")
+    }
 }

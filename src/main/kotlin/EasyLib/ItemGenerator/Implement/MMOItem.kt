@@ -1,8 +1,7 @@
-package EasyCrate.Factory.ItemGenerator.Implement
+package EasyLib.ItemGenerator.Implement
 
-import EasyCrate.Factory.ItemGenerator.ItemGenerator
+import EasyLib.ItemGenerator.ItemGenerator
 import net.Indyuce.mmoitems.MMOItems
-import net.Indyuce.mmoitems.api.item.mmoitem.MMOItem
 import net.Indyuce.mmoitems.api.player.PlayerData
 import org.bukkit.Material
 import org.bukkit.entity.Player

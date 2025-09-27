@@ -1,8 +1,9 @@
-package EasyCrate.Factory.ItemGenerator
+package EasyLib.ItemGenerator
 
-import EasyCrate.Factory.ItemGenerator.Implement.MMOItem
-import EasyCrate.Factory.ItemGenerator.Implement.NeiGeItem
-import EasyCrate.Factory.ItemGenerator.Implement.SxItem
+import EasyLib.ItemGenerator.Implement.MMOItem
+import EasyLib.ItemGenerator.Implement.NeiGeItem
+import EasyLib.ItemGenerator.Implement.SxItem
+import EasyLib.ItemGenerator.Implement.EasySaverItem
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 interface ItemGenerator {
@@ -28,6 +29,11 @@ interface ItemGenerator {
                 Class.forName("net.Indyuce.mmoitems.MMOItems")
                 generators.add(MMOItem())
             } catch (_: ClassNotFoundException) {}
+
+            try {
+                Class.forName("easySaver.Config.itemconfig")
+                generators.add(EasySaverItem())
+            }catch (_: ClassNotFoundException){}
         }
 
         fun generateItem(id: String, player: Player): ItemStack {

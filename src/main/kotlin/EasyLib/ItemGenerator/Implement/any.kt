@@ -1,6 +1,6 @@
-package EasyCrate.Factory.ItemGenerator.Implement
+package EasyLib.ItemGenerator.Implement
 
-import EasyCrate.Factory.ItemGenerator.ItemGenerator
+import EasyLib.ItemGenerator.ItemGenerator
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 

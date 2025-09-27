@@ -8,11 +8,14 @@ import taboolib.common.platform.function.info
 import taboolib.common.platform.function.warning
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.configuration.Configuration
+import taboolib.module.configuration.Type
 import java.io.File
 
 
-open class  GuiConfig(private val config: Configuration) : GuiInterface {
-
+open class  GuiConfig(private val configFile: File) : GuiInterface {
+    private val config : Configuration by lazy {
+        Configuration.loadFromFile(configFile, Type.YAML)
+    }
     fun reload(){
         checkForCompleteness()
     }

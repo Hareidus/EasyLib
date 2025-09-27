@@ -1,9 +1,9 @@
 package EasyLib.EasyGui.EasyGuiConfig.GuiConfig
 
 import taboolib.common.PrimitiveIO.warning
-import taboolib.module.configuration.Configuration
+import java.io.File
 
-class PageableGuiConfig(private val config: Configuration) : GuiConfig(config) {
+class PageableGuiConfig(configFile: File) : GuiConfig(configFile) {
 
     override fun checkForCompleteness() {
         val keySet = getGuiKey()
@@ -11,7 +11,7 @@ class PageableGuiConfig(private val config: Configuration) : GuiConfig(config) {
         validate(this, setOf("baned"))
 
         for(key in keySet){
-            val section = getKeySection()?.getConfigurationSection(key.toString())
+            val section = getKeySection()?.getConfigurationSection(key)
             val function = section?.getString("IconFunction")
             if(function == "baned"){
                 val isUsed = getUsedChar().contains(key.toCharArray()[0])

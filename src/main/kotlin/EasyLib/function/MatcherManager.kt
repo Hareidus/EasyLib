@@ -1,5 +1,7 @@
 package EasyLib.function
 
+import EasyLib.function.matcher.PlaceholderMatcher
+import EasyLib.function.matcher.VaultMatcher
 import org.bukkit.entity.Player
 
 //设计思路
@@ -11,13 +13,28 @@ import org.bukkit.entity.Player
 class MatcherManager {
 
 
-    private val strategyMap = mutableMapOf<String, MatcherStrategy>().apply {
-//        put("@live", LiveTimeMatcher())
-//        put("@activator", ActivatorMatcher())
-        // 添加其他策略前缀
+    private val strategyMap by lazy {
+        mutableMapOf<String, MatcherStrategy>().apply {
+            put("@vault", VaultMatcher())
+            put("@papi", PlaceholderMatcher())
+
+        }
     }
+
+    fun addMatcher(prefix: String, strategy: MatcherStrategy) {
+        strategyMap[prefix] = strategy
+    }
+
+    fun listMatchers(): List<String> {
+        val list = mutableListOf<String>()
+        for ((prefix, strategy) in strategyMap) {
+            list.add("registered matcher with prefix: $prefix , function: $strategy")
+        }
+        return list
+    }
+
     fun checkMatcher(input : List<String>,  thisPlayer : Player) : Boolean{
-        val actions = mutableListOf<Actions>()
+        val actions = mutableListOf<Actions<*>>()
         for (text in input){
             val prefix = text.substringBefore(':')
             strategyMap[prefix]?.let {

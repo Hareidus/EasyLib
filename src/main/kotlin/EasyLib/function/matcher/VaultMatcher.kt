@@ -5,33 +5,29 @@ import taboolib.common.platform.function.warning
 import taboolib.platform.compat.getBalance
 import EasyLib.function.Actions
 import EasyLib.function.MatcherStrategy
-import Matching.function.actions.VaultAction
+import EasyLib.function.actions.VaultAction
 
 class VaultMatcher : MatcherStrategy {
-    override fun matches(text: String, thisPlayer: Player): Actions? {
+    override fun matches(text: String, thisPlayer: Player): Actions<*>? {
         if (!text.startsWith("@vault")) {
             return null
         }
-
-        val split = text.split(":").map { it.trim() }
+        val split = text.split("|").map { it.trim() }
         if (split.size != 2) {
             warning("vault matcher error, text: $text")
             return null
         }
-
         val vaultStr = split[1]
-        val requiredVault = vaultStr.toIntOrNull()
+        val requiredVault = vaultStr.toDoubleOrNull()
         if (requiredVault == null) {
             warning("vault matcher error, text: $text")
             return null
         }
-        val playersVault = thisPlayer.getBalance().toInt()
+        val playersVault = thisPlayer.getBalance()
         return if (playersVault >= requiredVault) {
-            VaultAction(requiredVault)
+            VaultAction().apply { this.data = requiredVault }
         } else {
-            thisPlayer.sendMessage("§c你没有足够的金豆")
             null
         }
     }
-
 }

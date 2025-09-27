@@ -5,7 +5,7 @@ import taboolib.module.configuration.Config
 import taboolib.module.configuration.ConfigFile
 
 object DebugConfig {
-    @Config("debug.yml")
+
     lateinit var config: ConfigFile
 
     val enabled: Boolean by lazy {

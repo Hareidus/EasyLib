@@ -14,23 +14,34 @@ import taboolib.platform.util.buildItem
  * 翻页界面构建器
  */
 abstract class IPageableGuiBuilder<T>(override val config : GuiConfig, val thisPlayer: Player) : IBuilder(config,thisPlayer) {
-
-    abstract val chestImpl : PageableChestImpl<T>
-
+    override val chestImpl : PageableChestImpl<T> by lazy {
+        PageableChestImpl(config.getTitle())
+    }
     abstract fun setupElement ()
-
     abstract fun elementGenerateItem()
 
     /**
      *  构建翻页界面，需要注意如下步骤：
      * 1. 创建翻页界面实例
      * 2. 设置布局 setupChest(chestImpl)
-     * 3. 为界面加入元素 setUpElement()
-     * 4. 设置元素对应物品 elementGenerateItem()
-     * 5. 映射图标 mapIconsToFunctions()
+     * 3. 映射图标 mapIconsToFunctions()
+     * 4. 为界面加入元素 setUpElement()
+     * 5. 设置元素对应物品 elementGenerateItem()
      *
      */
-    abstract override fun build() : Inventory
+    override fun build(otherFunc : () -> Unit): Inventory {
+        setupChest()
+        mapIconsToFunctions()
+        setupElement()
+        elementGenerateItem()
+        otherFunc()
+        return chestImpl.build()
+    }
+
+
+    fun getCustomChestImpl() : PageableChestImpl<T>{
+        return chestImpl
+    }
 
     fun elementSlotByKey (key : Char){
         chestImpl.slotsBy(key)
@@ -67,8 +78,8 @@ abstract class IPageableGuiBuilder<T>(override val config : GuiConfig, val thisP
     }
 
 
-    fun setNextIcon(key: Char , pageableChestImpl: PageableChestImpl<T> , banedItem: ItemStack) {
-        pageableChestImpl.setNextPage(pageableChestImpl.getFirstSlot(key)) { _, hasNextPage ->
+    fun setNextIcon(key: Char, banedItem: ItemStack) {
+        chestImpl.setNextPage(chestImpl.getFirstSlot(key)) { _, hasNextPage ->
             if (hasNextPage) {
                 config.getKeySection()?.let { section ->
                     itemProvider(section, key, thisPlayer)?.let { itemStack ->
@@ -85,8 +96,8 @@ abstract class IPageableGuiBuilder<T>(override val config : GuiConfig, val thisP
             }
         }
     }
-    fun setLastIcon(key: Char, pageableChestImpl: PageableChestImpl<T>, banedItem: ItemStack) {
-        pageableChestImpl.setPreviousPage(pageableChestImpl.getFirstSlot(key)) { _, hasPreviousPage ->
+    fun setLastIcon(key: Char, banedItem: ItemStack) {
+        chestImpl.setPreviousPage(chestImpl.getFirstSlot(key)) { _, hasPreviousPage ->
             if (hasPreviousPage) {
                 config.getKeySection()?.let { section ->
                     itemProvider(section, key, thisPlayer)?.let { itemStack ->

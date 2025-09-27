@@ -6,6 +6,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import taboolib.module.configuration.ConfigFile
 import taboolib.module.ui.type.impl.ChestImpl
+import taboolib.module.ui.type.impl.PageableChestImpl
 
 /**
  * @author Hareidus
@@ -14,10 +15,12 @@ import taboolib.module.ui.type.impl.ChestImpl
  */
 
 abstract class INormalGuiBuilder(override val config : GuiConfig, thisPlayer: Player) : IBuilder(config,thisPlayer) {
-    abstract val chestImpl : ChestImpl
-
-
-
+    override val chestImpl : ChestImpl by lazy {
+        ChestImpl(config.getTitle())
+    }
+    fun getCustomChestImpl() :ChestImpl {
+        return chestImpl
+    }
     /**
      *  构建普通界面，需要注意如下步骤：
      * 1. 创建翻页界面实例
@@ -25,5 +28,10 @@ abstract class INormalGuiBuilder(override val config : GuiConfig, thisPlayer: Pl
      * 3. 映射图标 mapIconsToFunctions()
      *
      */
-    abstract override fun build(): Inventory
+     override fun build(otherFunc : () -> Unit): Inventory {
+         setupChest()
+         mapIconsToFunctions()
+        otherFunc()
+         return chestImpl.build()
+     }
 }

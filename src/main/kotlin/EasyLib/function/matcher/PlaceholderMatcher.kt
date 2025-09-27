@@ -20,12 +20,11 @@ class PlaceholderMatcher : MatcherStrategy {
      * @param thisPlayer 当前玩家对象，用于替换占位符
      * @return 如果玩家满足条件，则返回一个空操作对象；否则返回 null
      */
-    override fun matches(text: String, thisPlayer: Player): Actions? {
+    override fun matches(text: String, thisPlayer: Player): Actions<*>? {
         // 分割文本为两部分，应确保文本包含且仅包含一个冒号
-        val split = text.split(":")
+        val split = text.split("|")
         if (split.size != 2) {
             warning("PlaceholderMatcher: $text is not a placeholder (missing colon), please check your file")
-            return null
         }
         
         // 分割条件部分为三个部分，确保格式正确
@@ -45,7 +44,7 @@ class PlaceholderMatcher : MatcherStrategy {
         val rhsHolderStr  = lhsStr.replace("%","")
 
         // 创建一个空操作对象，用于后续可能的返回
-        val voidAction = VoidAction(1)
+        val voidAction = VoidAction()
 
         // 将左侧值转换为数字，如果转换失败，则返回 null
         val lhsValue = runCatching { lhs.toDouble() }.getOrElse {
@@ -91,5 +90,4 @@ class PlaceholderMatcher : MatcherStrategy {
             }
         }
     }
-
 }

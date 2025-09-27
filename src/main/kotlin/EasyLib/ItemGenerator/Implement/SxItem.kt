@@ -1,14 +1,10 @@
-package EasyCrate.Factory.ItemGenerator.Implement
+package EasyLib.ItemGenerator.Implement
 
-import EasyCrate.Factory.ItemGenerator.ItemGenerator
+import EasyLib.ItemGenerator.ItemGenerator
 import github.saukiya.sxitem.SXItem
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import taboolib.common.platform.function.submit
-import taboolib.platform.BukkitPlugin
-import taboolib.platform.util.bukkitPlugin
 
 class SxItem : ItemGenerator {
 
