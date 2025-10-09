@@ -1,12 +1,14 @@
 package EasyLib.function.matcher
 
+import EasyLib.Utils.infoType
+import EasyLib.Utils.infoType.Companion.send
 import org.bukkit.entity.Player
 import taboolib.common.platform.function.warning
 import taboolib.platform.compat.replacePlaceholder
 import EasyLib.function.Actions
 import EasyLib.function.MatcherStrategy
 import EasyLib.function.actions.VoidAction
-import taboolib.platform.util.sendLang
+import taboolib.platform.util.asLangText
 
 class PlaceholderMatcher : MatcherStrategy {
     /**
@@ -20,7 +22,7 @@ class PlaceholderMatcher : MatcherStrategy {
      * @param thisPlayer 当前玩家对象，用于替换占位符
      * @return 如果玩家满足条件，则返回一个空操作对象；否则返回 null
      */
-    override fun matches(text: String, thisPlayer: Player): Actions<*>? {
+    override fun matches(text: String, thisPlayer: Player, info: infoType): Actions<*>? {
         // 分割文本为两部分，应确保文本包含且仅包含一个冒号
         val split = text.split("|")
         if (split.size != 2) {
@@ -61,27 +63,27 @@ class PlaceholderMatcher : MatcherStrategy {
         // 根据运算符判断条件是否满足，并返回相应的结果
         return when (op) {
             ">=" -> if (lhsValue >= rhsValue) voidAction else {
-                thisPlayer.sendLang("placeholder-matcher-fail", lhsHolderStr, rhsHolderStr , op)
+                thisPlayer.asLangText("placeholder-$lhsHolderStr-matcher-fail", lhsValue, rhsValue , op).send(info,thisPlayer)
                 null
             }
             "<=" -> if (lhsValue <= rhsValue) voidAction else {
-                thisPlayer.sendLang("placeholder-matcher-fail", lhsHolderStr, rhsHolderStr , op)
+                thisPlayer.asLangText("placeholder-$lhsHolderStr-matcher-fail", lhsValue, rhsValue , op).send(info,thisPlayer)
                 null
             }
             ">" -> if (lhsValue > rhsValue) voidAction else {
-                thisPlayer.sendLang("placeholder-matcher-fail", lhsHolderStr, rhsHolderStr , op)
+                thisPlayer.asLangText("placeholder-$lhsHolderStr-matcher-fail", lhsValue, rhsValue , op).send(info,thisPlayer)
                 null
             }
             "<" -> if (lhsValue < rhsValue) voidAction else {
-                thisPlayer.sendLang("placeholder-matcher-fail", lhsHolderStr, rhsHolderStr , op)
+                thisPlayer.asLangText("placeholder-$lhsHolderStr-matcher-fail", lhsValue, rhsValue , op).send(info,thisPlayer)
                 null
             }
             "==" -> if (lhsValue == rhsValue) voidAction else {
-                thisPlayer.sendLang("placeholder-matcher-fail", lhsHolderStr, rhsHolderStr , op)
+                thisPlayer.asLangText("placeholder-$lhsHolderStr-matcher-fail", lhsValue, rhsValue , op).send(info,thisPlayer)
                 null
             }
             "!=" -> if (lhsValue != rhsValue) voidAction else {
-                thisPlayer.sendLang("placeholder-matcher-fail", lhsHolderStr, rhsHolderStr , op)
+                thisPlayer.asLangText("placeholder-$lhsHolderStr-matcher-fail", lhsValue, rhsValue , op).send(info,thisPlayer)
                 null
             }
             else -> {
@@ -89,5 +91,9 @@ class PlaceholderMatcher : MatcherStrategy {
                 null
             }
         }
+    }
+
+    override fun matches(text: String, op: String, thisPlayer: Player, info: infoType): Actions<*>? {
+        throw NotImplementedError("Not implemented")
     }
 }

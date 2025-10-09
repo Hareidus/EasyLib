@@ -9,28 +9,13 @@ import taboolib.platform.util.takeItem
 
 class RemoveItemAction  : Actions<String> {
     override var data: String = ""
-
+    lateinit var condition : String
+    var amount = 1
     override fun doAction(thisPlayer: Player) {
-        try {
-            val parts = data.split("-")
-            if (parts.size != 2) {
-                error("Invalid data format: $data")
-            }
-
-            val expression = parts[0]
-            val amount = parts[1].toIntOrNull() ?: run {
-                error("Invalid amount: ${parts[1]}")
-            }
-
-            thisPlayer.inventory.takeItem(amount) { itemStack ->
-                Arim.itemMatch.match(itemStack, expression)
-            }
-        } catch (e: Exception) {
-            // 记录错误日志
-            println("RemoveItemAction execution failed: ${e.message}")
+        thisPlayer.inventory.takeItem(amount) { itemStack ->
+            Arim.itemMatch.match(itemStack, condition)
         }
     }
-
     override fun doAction(thisPlayer: Player, text: String) {
         try {
             val text2 = text.substringAfter("|", "")

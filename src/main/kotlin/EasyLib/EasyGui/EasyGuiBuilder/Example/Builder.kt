@@ -40,8 +40,8 @@ class Builder(override val config: GuiConfig, thisPlayer: Player) : IPageableGui
                 when(function){
                     "playerInfo" -> setPlayerInfoIcon(key)
                     "player" -> elementSlotByKey(key)
-                    "next" -> setNextIcon(key,getBanedItem())
-                    "last" -> setLastIcon(key,getBanedItem())
+                    "next" -> setNextIcon(key)
+                    "last" -> setLastIcon(key)
                     else -> setDefaultIcon(key)
                 }
             }

@@ -11,10 +11,10 @@ object FileUtils {
      * @param dir 目录
      * @param func 处理函数
      */
-    fun processDirectory(suffix : String,dir : File, func : (File, Configuration) -> Unit){
-        dir.listFiles()?.forEach { childFile ->
+    fun File.processDirectory(suffix : String, func : (File, Configuration) -> Unit){
+        this.listFiles()?.forEach { childFile ->
             if (childFile.isDirectory){
-                processDirectory(suffix,childFile,func)
+                childFile.processDirectory(suffix,func)
             }else if (childFile.isFile && childFile.name.endsWith(suffix)){
                 val config = Configuration.loadFromFile(childFile, Type.YAML)
                 func(childFile,config)

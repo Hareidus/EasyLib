@@ -1,43 +1,59 @@
 package EasyLib.function.matcher
 
+import EasyLib.Utils.infoType
+import EasyLib.Utils.infoType.Companion.send
 import EasyLib.function.Actions
 import EasyLib.function.MatcherStrategy
 import EasyLib.function.actions.RemoveItemAction
 import easySaver.arim.Arim
 import org.bukkit.entity.Player
 import taboolib.common.platform.function.info
+import taboolib.platform.util.asLangText
+
 
 class ItemMatcher : MatcherStrategy {
     /**
      * 匹配玩家物品名称
      */
+    override fun matches(text: String, thisPlayer: Player, info: infoType): Actions<*>? {
+        return matches(text, "{amount}", thisPlayer, info)
+    }
 
-    override fun matches(text: String, thisPlayer: Player): Actions<*>? {
-        // @item|name:all(startswith(&c机械),c(靴))-1
-        // 表达式-数量
+    //op example : {amount} * 2 + 1
+    override fun matches(text: String, op: String, thisPlayer: Player, info: infoType): Actions<*>? {
         val split = text.split("|")
-        if (split.size != 2){
+        if (split.size != 2) {
             info("item matcher error, text: $text")
             return null
         }
+
         val split2 = split[1].split("-")
-        if (split2.size != 2){
-            info("item matcher error, text: $text")
-        }
-        val expression = split2[0]
-        val number = split2[1].toIntOrNull()
-        if (number == null){
+        if (split2.size != 2) {
             info("item matcher error, text: $text")
             return null
         }
+
+        val expression = split2[0]
+        val amount = split2[1].toIntOrNull() ?: throw IllegalArgumentException("Invalid amount: ${split2[1]}")
+        val parse = op.replace("{amount}",amount.toString())
+        val number = try {
+            Arim.fixedCalculator.evaluate(parse).toInt()
+        } catch (e: Exception) {
+            info("item matcher error, text: $text")
+            return null
+        }
+
         val count = thisPlayer.inventory.contents.count { itemStack ->
             Arim.itemMatch.match(itemStack, expression)
         }
-        if (count >= number){
+
+        if (count >= number) {
             return RemoveItemAction().apply {
-                // 吧后续的表达式传递
-                this.data = split[1]
+                this.amount = amount
+                this.condition = expression
             }
+        } else {
+            thisPlayer.asLangText("item-matcher-fail").send(info, thisPlayer)
         }
         return null
     }

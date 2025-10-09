@@ -43,12 +43,12 @@ object HookKether {
         ).thenApply { it }
     }
 
-    @Awake(LifeCycle.LOAD)
-    fun testCommand(){
-        simpleCommand("testKether"){ sender, args ->
-            sender.castSafely< Player>()?.let {
-                runKether(args.joinToString (" ") ,it)
-            }
-        }
-    }
+//    @Awake(LifeCycle.LOAD)
+//    fun testCommand(){
+//        simpleCommand("testKether"){ sender, args ->
+//            sender.castSafely< Player>()?.let {
+//                runKether(args.joinToString (" ") ,it)
+//            }
+//        }
+//    }
 }

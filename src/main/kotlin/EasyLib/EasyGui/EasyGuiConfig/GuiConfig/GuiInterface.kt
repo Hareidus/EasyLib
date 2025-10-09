@@ -1,14 +1,24 @@
 package EasyLib.EasyGui.EasyGuiConfig.GuiConfig
 
+import EasyLib.EasyGui.EasyGuiConfig.GuiConfig.GuiInterface.Companion.parseGradientColor
+import org.bukkit.Color
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
+import taboolib.common.platform.ProxyCommandSender
 import taboolib.common.platform.function.info
+import taboolib.common5.util.replace
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.library.xseries.XMaterial
+import taboolib.module.chat.HexColor
+import taboolib.module.chat.colored
+import taboolib.module.chat.toGradientColor
+import taboolib.module.lang.TypeList
+import taboolib.module.lang.TypeText
 import taboolib.module.ui.type.Chest
 import taboolib.platform.compat.replacePlaceholder
+import taboolib.platform.util.asLangText
 import taboolib.platform.util.buildItem
 import java.util.stream.Collectors
 
@@ -84,6 +94,28 @@ interface GuiInterface {
                 info("配置项没有找到Key: $key")
                 return null
             }
+            return try {
+                getItemStack(itemSection, key.toString(),player)
+            } catch (e: Exception) {
+                error("无法构建物品: $key 错误项: ${e.message}")
+            }
+        }
+
+        fun getItemFromConfig(section: ConfigurationSection?, key: String,player : Player): ItemStack? {
+            // 检查是否启用了调试模式
+            val itemSection = section?.getConfigurationSection(key) ?: run {
+                info("配置项没有找到Key: $key")
+                return null
+            }
+            return try {
+                getItemStack(itemSection, key,player)
+            } catch (e: Exception) {
+                error("无法构建物品: $key 错误项: ${e.message}")
+            }
+        }
+
+
+        fun getItemStack(itemSection: ConfigurationSection, key: String,player : Player): ItemStack? {
             val materialString = itemSection.getString("Material") ?.uppercase()?.replace(" ","_")?: run {
                 info("这个材质标签不可用，请检查你的配置文件。Key: $key")
                 return null
@@ -94,12 +126,14 @@ interface GuiInterface {
             }
             val itemName = itemSection.getString("Name")
             val itemLore = itemSection.getStringList("Lore")
+
             return try {
                 buildItem(material) {
                     this.name = itemName
                     for (text in itemLore) {
                         val newtext = text.replacePlaceholder(player)
-                        lore.add(newtext)
+                        val newtext2 = newtext.parseGradientColor()
+                        lore.add(newtext2.parseGradientColor())
                     }
                     colored()
                 }
@@ -110,7 +144,22 @@ interface GuiInterface {
             }
         }
 
+
+
+
+        fun String.parseGradientColor(): String {
+            val gradientRegex = Regex("<gradient:([#a-fA-F0-9]+):([#a-fA-F0-9]+)>\\s(.*?)</gradient>", RegexOption.IGNORE_CASE)
+            val matchResult = gradientRegex.find(this) ?: return this // 若不匹配，原样返回
+
+            val color1Hex = matchResult.groupValues[1]  // 如 "#ff8747" ,转换成Int
+            val color1 = color1Hex.replace("#", "").toInt(16)
+            val color2Hex = matchResult.groupValues[2]  // 如 "#14ff9a"
+            val color2 = color2Hex.replace("#", "").toInt(16)
+            val text = matchResult.groupValues[3]
+            return text.toGradientColor(listOf(color1, color2))
+        }
     }
+
 }
 
 

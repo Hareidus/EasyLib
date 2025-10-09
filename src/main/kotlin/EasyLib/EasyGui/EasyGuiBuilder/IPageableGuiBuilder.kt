@@ -46,7 +46,7 @@ abstract class IPageableGuiBuilder<T>(override val config : GuiConfig, val thisP
     fun elementSlotByKey (key : Char){
         chestImpl.slotsBy(key)
     }
-
+    @Deprecated("请使用参考新的翻页写法")
         /**
      * 获取遮挡用途的物品图标
      *
@@ -64,7 +64,7 @@ abstract class IPageableGuiBuilder<T>(override val config : GuiConfig, val thisP
                 DebugLogger.debug("Processing icon key: $key, function: $function", "icon_mapping")
                 if (function == "baned"){
                     config.getKeySection()?.let {
-                        itemProvider(it, key, thisPlayer)?.let { itemStack ->
+                        itemProvider(it, key.toString(), thisPlayer)?.let { itemStack ->
                             return@getBanedItem itemStack
                         }
                     }
@@ -78,11 +78,11 @@ abstract class IPageableGuiBuilder<T>(override val config : GuiConfig, val thisP
     }
 
 
-    fun setNextIcon(key: Char, banedItem: ItemStack) {
+    fun setNextIcon(key: Char) {
         chestImpl.setNextPage(chestImpl.getFirstSlot(key)) { _, hasNextPage ->
             if (hasNextPage) {
                 config.getKeySection()?.let { section ->
-                    itemProvider(section, key, thisPlayer)?.let { itemStack ->
+                    itemProvider(section, "${key}.has", thisPlayer)?.let { itemStack ->
                         return@setNextPage itemStack
                     }
                 }
@@ -92,15 +92,15 @@ abstract class IPageableGuiBuilder<T>(override val config : GuiConfig, val thisP
                     colored()
                 }
             } else {
-                banedItem
+                getNormalIcon(config, "${key}.normal")
             }
         }
     }
-    fun setLastIcon(key: Char, banedItem: ItemStack) {
+    fun setLastIcon(key: Char) {
         chestImpl.setPreviousPage(chestImpl.getFirstSlot(key)) { _, hasPreviousPage ->
             if (hasPreviousPage) {
                 config.getKeySection()?.let { section ->
-                    itemProvider(section, key, thisPlayer)?.let { itemStack ->
+                    itemProvider(section, "${key}.has", thisPlayer)?.let { itemStack ->
                         return@setPreviousPage itemStack
                     }
                 }
@@ -109,8 +109,21 @@ abstract class IPageableGuiBuilder<T>(override val config : GuiConfig, val thisP
                     colored()
                 }
             } else {
-                banedItem
+                getNormalIcon(config, "${key}.normal")
             }
+        }
+    }
+
+    private fun getNormalIcon(config : GuiConfig, key : String) : ItemStack{
+        config.getKeySection()?.let { section ->
+            itemProvider(section, key, thisPlayer)?.let { itemStack ->
+                return itemStack
+            }
+        }
+        // 只有在无法从配置获取物品时才创建默认物品
+        return buildItem(Material.STONE) {
+            lore.add("&cError Next Page Icon show item")
+            colored()
         }
     }
 }

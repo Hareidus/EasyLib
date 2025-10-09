@@ -1,5 +1,6 @@
 package EasyLib.function
 
+import EasyLib.Utils.infoType
 import EasyLib.function.matcher.PlaceholderMatcher
 import EasyLib.function.matcher.VaultMatcher
 import org.bukkit.entity.Player
@@ -33,12 +34,12 @@ class MatcherManager {
         return list
     }
 
-    fun checkMatcher(input : List<String>,  thisPlayer : Player) : Boolean{
+    fun checkMatcher(input : List<String>,  thisPlayer : Player,info : infoType) : Boolean{
         val actions = mutableListOf<Actions<*>>()
         for (text in input){
             val prefix = text.substringBefore(':')
             strategyMap[prefix]?.let {
-                it.matches(text,thisPlayer)?.run(actions::add)
+                it.matches(text,thisPlayer, info)?.run(actions::add)
             } ?: return false
             //特性笔记
             // 对于 strategyMap[prefix]?,如果没有这个前缀则直接跳过let块
@@ -50,16 +51,16 @@ class MatcherManager {
         return true
     }
 
-    fun checkMatcherWithoutAction(input : List<String>,  thisPlayer : Player) : Boolean{
+    fun checkMatcherWithoutAction(input : List<String>,  thisPlayer : Player,info : infoType) : Boolean{
         for (text in input){
             val prefix = text.substringBefore(':')
-           if (strategyMap[prefix]?.matches(text,thisPlayer) == null) return  false
+           if (strategyMap[prefix]?.matches(text,thisPlayer, info) == null) return  false
         }
         return true
     }
 
-    fun checkMatcherSingleTextWithoutAction(input : String,  thisPlayer : Player) : Boolean{
+    fun checkMatcherSingleTextWithoutAction(input : String,  thisPlayer : Player,info : infoType) : Boolean{
         val prefix = input.substringBefore(':')
-        return strategyMap[prefix]?.matches(input,thisPlayer) != null
+        return strategyMap[prefix]?.matches(input,thisPlayer, info) != null
     }
 }

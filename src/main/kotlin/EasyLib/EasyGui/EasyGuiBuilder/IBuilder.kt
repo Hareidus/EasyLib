@@ -21,7 +21,7 @@ import taboolib.module.ui.type.impl.ChestImpl
 abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Player) {
     protected data class BuildStep(val name: String, val duration: Long, val success: Boolean)
     protected val buildSteps = mutableListOf<BuildStep>()
-    val itemProvider: (ConfigurationSection, Char, Player) -> ItemStack? = { section, key, player ->
+    val itemProvider: (ConfigurationSection, String, Player) -> ItemStack? = { section, key, player ->
         getItemFromConfig(section, key, player)
     }
     abstract val chestImpl : ChestImpl
@@ -38,8 +38,7 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
      */
     open fun buildAndOpen(buildFunc : () ->  Unit): IBuilder {
         try {
-            build(buildFunc)
-            open()
+            thisPlayer.openMenu(build(buildFunc))
         } catch (e: Exception) {
             DebugLogger.debug("Failed to build and open GUI: ${e.message}", "gui_build", "EasyLib")
             throw GuiBuildException("GUI构建和打开失败", config.getAbsolutePath(), e)
@@ -134,7 +133,7 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
         try {
             DebugLogger.debug("Setting default icon for key: $key", "default_icon")
             config.getKeySection()?.let { section ->
-                itemProvider(section, key, thisPlayer)?.let { itemStack ->
+                itemProvider(section, key.toString(), thisPlayer)?.let { itemStack ->
                     chestImpl.set(key, itemStack) {
                         isCancelled = true
                         try {
@@ -168,7 +167,7 @@ abstract class IBuilder(open val config: GuiConfig, private val thisPlayer: Play
         try {
             DebugLogger.debug("Setting custom icon for key: $key", "default_icon")
             config.getKeySection()?.let { section ->
-                itemProvider(section, key, thisPlayer)?.let { itemStack ->
+                itemProvider(section, key.toString(), thisPlayer)?.let { itemStack ->
 //                    chestImpl.set(key, itemStack) {
 //
 //                    }
