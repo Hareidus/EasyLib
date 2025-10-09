@@ -8,6 +8,7 @@ import EasyLib.function.actions.RemoveItemAction
 import easySaver.arim.Arim
 import org.bukkit.entity.Player
 import taboolib.common.platform.function.info
+import taboolib.platform.compat.replacePlaceholder
 import taboolib.platform.util.asLangText
 
 
@@ -35,7 +36,7 @@ class ItemMatcher : MatcherStrategy {
 
         val expression = split2[0]
         val amount = split2[1].toIntOrNull() ?: throw IllegalArgumentException("Invalid amount: ${split2[1]}")
-        val parse = op.replace("{amount}",amount.toString())
+        val parse = op.replace("{amount}",amount.toString()).replacePlaceholder(thisPlayer)
         val number = try {
             Arim.fixedCalculator.evaluate(parse).toInt()
         } catch (e: Exception) {

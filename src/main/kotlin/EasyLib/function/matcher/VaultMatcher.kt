@@ -9,6 +9,7 @@ import EasyLib.function.Actions
 import EasyLib.function.MatcherStrategy
 import EasyLib.function.actions.VaultAction
 import easySaver.arim.Arim
+import taboolib.platform.compat.replacePlaceholder
 import taboolib.platform.util.asLangText
 
 class VaultMatcher : MatcherStrategy {
@@ -26,7 +27,7 @@ class VaultMatcher : MatcherStrategy {
             return null
         }
         val vaultStr = split[1]
-        val parse = op.replace("{amount}", vaultStr)
+        val parse = op.replace("{amount}", vaultStr).replacePlaceholder(thisPlayer)
         val requiredVault = try {
             Arim.fixedCalculator.evaluate(parse)
         } catch (e: Exception) {

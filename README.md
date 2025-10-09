@@ -148,16 +148,60 @@ FunctionManager.getActionManager().addAction("@custom", CustomAction())
 
 1. 创建配置文件 `gui.yml`：
 ```yaml
-Title: "&a示例界面"
+Title: "&c物品库物品"
+name: "examplePool"
+
 GuiPlain:
-  - "#########"
-  - "#       #"
-  - "#########"
+   - "#########"
+   - "@@@@@@@@@"
+   - "@@@@@@@@@"
+   - "@@@@@@@@@"
+   - "@@@@@@@@@"
+   - "L#######N"
+
 GuiKey:
-  '#':
-    Material: BLACK_STAINED_GLASS_PANE
-    Name: " "
-    IconFunction: "baned"
+   "@":
+      IconFunction: "item"
+      Material: "STAINED_GLASS_PANE"
+      Name: "&c告示"
+      Lore:
+         - "&ctest"
+   "#":
+      IconFunction: "any"
+      Material: "GLASS PANE"
+      Name: "&c边框"
+      Lore:
+         - "&7我是边界，别看我别看我ovo"
+   "N":
+      IconFunction: "next"
+      normal:
+         Material: "ender_pearl"
+         Name: "&c下一页"
+         Sound: "block_note_block_pling"
+         Lore:
+            - "&c已经是最后一页"
+      has:
+         Material: "ender_pearl"
+         Name: "&c下一页"
+         Sound: "block_note_block_pling"
+         Lore:
+            - "&c切换到下一页奖物品"
+   "L":
+      IconFunction: "last"
+      normal:
+         Material: "ender_pearl"
+         Name: "&c上一页"
+         Sound: "block_note_block_pling"
+         Lore:
+            - "&c已经是最后一页"
+      has:
+         Material: "ender_pearl"
+         Name: "&c上一页"
+         Sound: "block_note_block_pling"
+         Lore:
+            - "&c切换到上一页物品"
+
+
 ```
 
 
