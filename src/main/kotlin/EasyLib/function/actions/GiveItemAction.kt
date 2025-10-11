@@ -54,4 +54,9 @@ class GiveItemAction : Actions<String> {
             println("GiveItemAction execution failed: ${e.message}")
         }
     }
+
+    override fun toString(): String {
+        return "GiveItemAction - 给予玩家一个物品"
+    }
+
 }

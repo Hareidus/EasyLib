@@ -42,4 +42,8 @@ class RemoveItemAction  : Actions<String> {
         }
     }
 
+    override fun toString(): String {
+        return "RemoveItemAction - 从玩家背包拿走物品"
+    }
+
 }

@@ -11,6 +11,7 @@ plugins {
 
 taboolib {
     subproject = true
+
     env {
         // 安装模块
         install(Basic, Bukkit, BukkitHook, BukkitNMSUtil , BukkitUI,Kether,Metrics)
@@ -18,11 +19,6 @@ taboolib {
     version {
         taboolib = "6.2.3-1a8d7125"
         coroutines = "1.8.1"
-    }
-
-    relocate("top.maplex.arim","EasyLib.arim")
-    dependencies {
-        taboo("top.maplex.arim:Arim:1.2.14") // 替换为最新版本
     }
 
     description {
@@ -49,6 +45,7 @@ dependencies {
     compileOnly("top.magstar.lib:MagstarLib:1.0.1")
     compileOnly(kotlin("stdlib"))
     compileOnly(fileTree("libs"))
+    taboo("top.maplex.arim:Arim:1.2.14") // 替换为最新版本
 }
 
 tasks.withType<JavaCompile> {

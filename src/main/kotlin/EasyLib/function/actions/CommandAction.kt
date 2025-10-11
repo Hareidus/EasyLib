@@ -37,4 +37,9 @@ class CommandAction : Actions<String> {
             info("CommandAction execution failed for text '$text': ${e.message}")
         }
     }
+
+    override fun toString(): String {
+        return "CommandAction - 控制台执行指令"
+    }
+
 }

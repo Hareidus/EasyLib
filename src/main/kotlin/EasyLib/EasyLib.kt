@@ -14,8 +14,7 @@ import top.maplex.arim.tools.glow.api.IGlow
 import top.maplex.arim.tools.itemmatch.ItemMatch
 import top.maplex.arim.tools.variablecalculator.VariableCalculator
 
-object EasyLib : Plugin() {
-
+object EasyLib {
 
     /**
      *  条件判断
@@ -37,8 +36,4 @@ object EasyLib : Plugin() {
      */
     val glow by lazy { IGlow() }
     // 项目使用TabooLib Start Jar 创建!
-    override fun onEnable() {
-        info("Successfully running EasyLib!")
-        Metrics(27293,"1.0.0",Platform.BUKKIT)
-    }
 }
